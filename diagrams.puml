@@ -1,0 +1,150 @@
+@startuml Use Case Diagram
+title eCommerce Website
+
+left to right direction
+
+"Customer" as customer
+
+package "Catalog" {
+"4. Add Item to Cart" as (addItem)
+"3. View Item Details" as (viewDetails)
+"2. Filter Items" as (filter)
+"1. View Product Catalog" as (viewCatalog)
+}
+
+package "Checkout" {
+  "4. Confirm & Place Order" as (confirm)
+  "3. Enter Payment Info" as (enterPayment)
+  "2. Enter Shipping/Billing Info" as (enterShipping)
+  "1. Start Checkout" as (startCheckout)
+}
+
+package "Post-purchase" {
+  "1. View Confirmation Email" as (confirmation)
+}
+
+customer --> viewCatalog
+customer --> filter
+customer --> addItem
+
+customer --> startCheckout
+customer --> enterShipping
+customer --> enterPayment
+customer --> confirm
+
+customer --> confirmation
+@enduml
+
+
+@startuml Data Model
+title High Level Data Model
+
+rectangle "eCommerce Site" as site
+rectangle "Customer" as customer
+rectangle "Catalog" as catalog
+rectangle "Product" as product
+rectangle "Product SKU" as sku
+rectangle "Cart" as cart
+rectangle "Order" as order
+rectangle "Payment Authorization" as payment
+rectangle "Inventory" as inventory
+
+
+site --> catalog: 1 to many
+site --> customer: 1 to many
+customer --> order: 1 to many
+customer --> cart: 1 to 1
+cart --> sku: 1 to many
+sku --> inventory: 1 to 1
+catalog --> product: 1 to many
+product --> sku: 1 to many
+order --> payment: 1 to 1
+
+@enduml
+
+@startuml Logical Diagram
+
+title Logical Component Diagram
+
+actor "Customer" as customer
+actor "Employee" as emp
+
+component "eCommerce Website" as website
+component "eCommerce Admin Website" as admin
+component "Product Service" as product
+component "Orders Service" as orders
+component "Inventory Service" as inventory
+database "eCommerce Database" as database
+
+cloud "3rd Party SaaS" {
+  component "Payment Processor" as payment <<Payment>>
+  component "Twilio Sendgrid" as email <<Email>>
+}
+
+customer --> website
+emp --> admin
+
+website --> product
+website -> orders
+website --> inventory
+
+product --> database
+orders --> database
+inventory --> database
+
+orders ---> payment
+orders ---> email
+
+admin --> product
+admin --> inventory
+admin --> orders
+
+
+@enduml
+
+
+@startuml Deployment Diagram
+
+
+
+title Logical Component Diagram
+
+actor "Customer" as customer
+actor "Employee" as emp
+
+rectangle "AWS Account" {
+  cloud "us-east-1" {
+    interface "ecommerce.companyname.com" as dns <<Route53>>
+    component "Cloudfront Distribution" as cf
+
+    cf -up- dns
+
+    component "API Gateway" as api
+    component "S3 Website Bucket" as web {
+      file "eCommerce Static Assets\nhtml, js, css." as assets
+    }
+    component "Container Registry" as registry <<Elastic Container Registry>>
+    component "eCommerce Microservices" as ms <<Elastic Container Service>>
+    database "eCommerce Database" as db <<Aurora DSQL>>
+
+    cf --> web
+    cf --> api
+    api --> ms
+    ms --> registry
+    ms --> db
+  }
+}
+
+cloud "3rd Party SaaS" {
+  component "Payment Processor" as payment <<Payment>>
+  component "Twilio Sendgrid" as email <<Email>>
+}
+
+customer --> dns
+emp --> dns
+
+ms ---> payment
+ms ---> email
+
+
+@enduml
