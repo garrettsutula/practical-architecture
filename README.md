@@ -50,3 +50,5 @@ class Customer {
 
 # API Specification
 For applciations that provide APIs called by one or more client apps or third parties, the API specification in a standardized format (e.g. OpenAPI, WSDL, SDL, Protobuf, etc.)
+
+[API Spec Example](https://petstore3.swagger.io)
